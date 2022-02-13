@@ -23,27 +23,33 @@ class FM_Partition(FM_Partition_Base):
     def update_gbuckets(self):                                  # Calculates gains for all nodes - technically only neighbors are needed, but this is what I have for now
         
         for n in range(len(self.partition[0])):                 # Computing gains for each node in block0 - moves each node in block0 to block1, calculates cut size diff, then moves them back
-            self.partition[1].append(self.partition[0][n])      
-            self.partition[0].pop(n)
-            temp_cut_size = self.compute_cut_size(self.partition)
-            temp_cut_size = self.cut_size - temp_cut_size
-            if temp_cut_size in self.block0_g.keys():
-                self.block0_g.get(temp_cut_size).append(self.partition[0][n])
+            if self.partition[0][n] in self.locked_nodes:       # If the current node we are looking at is in the locked nodes list, just ignore it
+                continue
             else:
-                self.block0_g[temp_cut_size] = [self.partition[0][n]]
-            self.partition[0].insert(n, self.partition[1][-1])
-            self.partition[1].pop()
+                self.partition[1].append(self.partition[0][n])      
+                self.partition[0].pop(n)
+                temp_cut_size = self.compute_cut_size(self.partition)
+                temp_cut_size = self.cut_size - temp_cut_size
+                if temp_cut_size in self.block0_g.keys():
+                    self.block0_g.get(temp_cut_size).append(self.partition[0][n])
+                else:
+                    self.block0_g[temp_cut_size] = [self.partition[0][n]]
+                self.partition[0].insert(n, self.partition[1][-1])
+                self.partition[1].pop()
             
         for n in range(len(self.partition[1])):                 # Computing gains for each node in block1
-            self.partition[0].append(self.partition[1][n])
-            self.partition[1].pop(n)
-            temp_cut_size = self.compute_cut_size(self.partition)
-            if temp_cut_size in self.block1_g.keys():
-                self.block1_g.get(temp_cut_size).append(self.partition[1][n])
+            if self.partition[1][n] in self.locked_nodes:
+                continue
             else:
-                self.block1_g[temp_cut_size] = [self.partition[1][n]]
-            self.partition[1].insert(n, self.partition[0][-1])
-            self.partition[0].pop()        
+                self.partition[0].append(self.partition[1][n])
+                self.partition[1].pop(n)
+                temp_cut_size = self.compute_cut_size(self.partition)
+                if temp_cut_size in self.block1_g.keys():
+                    self.block1_g.get(temp_cut_size).append(self.partition[1][n])
+                else:
+                    self.block1_g[temp_cut_size] = [self.partition[1][n]]
+                self.partition[1].insert(n, self.partition[0][-1])
+                self.partition[0].pop()        
         
         
         raise NotImplementedError
@@ -54,6 +60,7 @@ class FM_Partition(FM_Partition_Base):
         
         biggest_gains = self.block1_g.get(x[-1])        # Get the highest gain's list of nodes
         biggest_gains.sort()
+        self.locked_nodes.append(biggest_gains[0])
         self.partition[0].append(biggest_gains[0])      # Add in the first node to the "left" (block0)
         self.partition[1].remove(biggest_gains[0])      # Remove the node from the "right" (block 1)
         
@@ -65,6 +72,7 @@ class FM_Partition(FM_Partition_Base):
         
         biggest_gains = self.block0_g.get(x[-1])
         biggest_gains.sort()
+        self.locked_nodes.append(biggest_gains[0])
         self.partition[1].append(biggest_gains[0])
         self.partition[0].remove(biggest_gains[0])
         
