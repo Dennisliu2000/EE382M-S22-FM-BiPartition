@@ -55,6 +55,7 @@ class FM_Partition(FM_Partition_Base):
                 else:
                     self.block1_g[temp_cut_size] = [self.partition[1][n]]
     
+    '''
     def update_gnodes(self):
         
         listk = []
@@ -79,6 +80,7 @@ class FM_Partition(FM_Partition_Base):
                     
         for key in listk1:
             self.block1_g.pop(key)
+    '''
         
     def move_rtl(self):
         
@@ -118,8 +120,8 @@ class FM_Partition(FM_Partition_Base):
             print(max(self.block1_g))
             a = self.block0_g.get(max(self.block0_g))
             b = self.block1_g.get(max(self.block1_g))
-            print(a)
-            print(b)
+            a.sort()
+            b.sort()
             if a[0] < b[0]:
                 self.move_rtl()
             else:
@@ -173,10 +175,10 @@ class FM_Partition(FM_Partition_Base):
         # Initialize gain buckets
         self.update_gbuckets()
         
-        print(self.partition)
-        print(self.block0_g)
-        print(self.block1_g)
-        print(self.cut_size)
+        #print(self.partition)
+        #print(self.block0_g)
+        #print(self.block1_g)
+        #print(self.cut_size)
             
         # TODO initialize any auxiliary data structure you need
         # e.g., node2net_map, cell gains, locked cells, etc.
@@ -199,10 +201,10 @@ class FM_Partition(FM_Partition_Base):
         
         # (m.min(len(self.partition[0]), len(self.partition[1])) / self.n_nodes) < r_ep      
         while len(self.locked_nodes) < self.n_nodes:                        # As long as the locked-nodes list does not have all the nodes, we can iterate and swap
-            print(self.partition)
-            print(self.block0_g)
-            print(self.block1_g)
-            print(self.cut_size)
+            #print(self.partition)
+            #print(self.block0_g)
+            #print(self.block1_g)
+            #print(self.cut_size)
             if ((len(self.partition[1]) - 1) / self.n_nodes) < self.r_ep:   # If a right-to-left (block1 to block0) move would make the right partition too small, then execute a left-to-right move
                 self.move_ltr()
             elif ((len(self.partition[0]) - 1) / self.n_nodes) < self.r_ep: # If a left-to-right move would make the left partition too small, then execute a right-to-left move
