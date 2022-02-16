@@ -6,7 +6,7 @@ Created on Mon Feb 14 20:08:03 2022
 """
 
 import os
-from student_impl.eid_dl34437_EID import FM_Partition
+from student_impl.eid_dl34437 import FM_Partition
 eid = "dl34437"
 benchmark_path = "benchmarks/example_2.txt"
 output_root = "output"
