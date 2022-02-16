@@ -37,6 +37,7 @@ class FM_Partition(FM_Partition_Base):
                 self.partition[1].pop()
                 if temp_cut_size in self.block0_g.keys():
                     self.block0_g.get(temp_cut_size).append(self.partition[0][n])
+                    self.block0_g.get(temp_cut_size).sort()
                 else:
                     self.block0_g[temp_cut_size] = [self.partition[0][n]]
         
@@ -52,10 +53,11 @@ class FM_Partition(FM_Partition_Base):
                 self.partition[0].pop()
                 if temp_cut_size in self.block1_g.keys():
                     self.block1_g.get(temp_cut_size).append(self.partition[1][n])
+                    self.block1_g.get(temp_cut_size).sort()
                 else:
                     self.block1_g[temp_cut_size] = [self.partition[1][n]]
     
-    '''
+    ''' DEAD FUNCTION
     def update_gnodes(self):
         
         listk = []
@@ -108,24 +110,25 @@ class FM_Partition(FM_Partition_Base):
         
         #x = sorted(self.block1_g.keys())  
         #y = self.block0_g.keys().sort()
-        
-        if max(self.block1_g) > max(self.block0_g):       # If the largest gain on block1 is greater than the largest gain in block0, perform a right-to-left move
-            self.move_rtl()
-        elif max(self.block0_g) > max(self.block1_g):     # Vice-versa
-            self.move_ltr()
-        else:                   # Both blocks have an equal maximum gain; find the first node via node number tie-breaker and then perform a rtl or ltr move
-            print(self.block0_g)
-            print(self.block1_g)
-            print(max(self.block0_g))
-            print(max(self.block1_g))
-            a = self.block0_g.get(max(self.block0_g))
-            b = self.block1_g.get(max(self.block1_g))
-            a.sort()
-            b.sort()
-            if a[0] < b[0]:
+        if self.n_nodes - len(self.locked_nodes) > 1:
+            if max(self.block1_g) > max(self.block0_g):       # If the largest gain on block1 is greater than the largest gain in block0, perform a right-to-left move
                 self.move_rtl()
-            else:
+            elif max(self.block0_g) > max(self.block1_g):     # Vice-versa
                 self.move_ltr()
+            else:                   # Both blocks have an equal maximum gain; find the first node via node number tie-breaker and then perform a rtl or ltr move
+                a = self.block0_g.get(max(self.block0_g))
+                b = self.block1_g.get(max(self.block1_g))
+                a.sort()
+                b.sort()
+                if a[0] < b[0]:
+                    self.move_rtl()
+                else:
+                    self.move_ltr()
+        else:                                                   # There is only one node left to move
+            if self.block0_g:
+                self.move_ltr()
+            else:
+                self.move_rtl()
              
         
     def initialize(self):
@@ -201,16 +204,17 @@ class FM_Partition(FM_Partition_Base):
         
         # (m.min(len(self.partition[0]), len(self.partition[1])) / self.n_nodes) < r_ep      
         while len(self.locked_nodes) < self.n_nodes:                        # As long as the locked-nodes list does not have all the nodes, we can iterate and swap
-            #print(self.partition)
-            #print(self.block0_g)
-            #print(self.block1_g)
-            #print(self.cut_size)
-            if ((len(self.partition[1]) - 1) / self.n_nodes) < self.r_ep:   # If a right-to-left (block1 to block0) move would make the right partition too small, then execute a left-to-right move
+            print(self.partition)
+            print(self.block0_g)
+            print(self.block1_g)
+            print(self.cut_size)
+            self.rtl_min = min((len(self.partition[1]) - 1), (len(self.partition[0]) + 1))
+            self.ltr_min = min((len(self.partition[0]) - 1), (len(self.partition[1]) + 1))
+            if (self.rtl_min / self.n_nodes) < self.r_ep:   # If a right-to-left (block1 to block0) move would make the right partition too small, then execute a left-to-right move
                 self.move_ltr()
-            elif ((len(self.partition[0]) - 1) / self.n_nodes) < self.r_ep: # If a left-to-right move would make the left partition too small, then execute a right-to-left move
+            elif (self.ltr_min / self.n_nodes) < self.r_ep: # If a left-to-right move would make the left partition too small, then execute a right-to-left move
                 self.move_rtl()
             else:                                                           # If both moves are acceptable, then find the best move out of both sides
-                print("I AM MOVING - I AM MOVING - I AM MOVING - I AM MOVING - I AM MOVING - I AM MOVING - I AM MOVING - I AM MOVING - ")
                 self.move()
                 
             #self.update_gnodes()
